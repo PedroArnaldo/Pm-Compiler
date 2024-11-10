@@ -3,133 +3,247 @@
 #include <string.h>
 #include <stdlib.h>
 #include "utils.h"
+#include "scan.h"
 
-typedef enum {
-    KEY_WORD,
-    IDENTIFIER,
-    NUMBER,
-    OPERADOR,
-    SYMBOL,
-    T_EOF,
-} TokenType;
+char ctr = 1;
 
-typedef struct{
-    TokenType type;
-    char lexema[255];
-    int line;
-} Token;
-
-typedef struct ListToken_T{
-    Token *tokens;
-    struct ListToken_T *next;
-} ListToken;
-
-void push(ListToken **head, Token *token){
-    
-    ListToken *current;
-
-    current = malloc(sizeof(ListToken));
-
-    current->tokens = token;
-    current->next = *head;
-    *head = current;
+char peek_char(){
+    return ctr;
 }
 
-const char *keywords[] = {"inteiro", "ler", "se", "entao", "senao", "mostrar", "real", "enquanto", "repita", "ate"};
+void advance(){
+    ctr = read_char();
+}
 
-TokenType check_keyword(const char *str){
-    for (int i = 0; i < 10; i++){
-        if(strcmp(str, keywords[i]) == 0)
-            return KEY_WORD;
+void skip_space(){
+    char c = peek_char();
+    while (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+        advance();
+        c = peek_char();
     }
-    return IDENTIFIER;
 }
 
-TokenType is_operator(char c){
-    return (c == '+' || c == '-' || c == '*' || c =='/' || c == '&' || c == '|' || c == '<' || c == '!' || c == '>' );
-}
-
-int is_symbol(char c) {
-    return (c == ';' || c == '(' || c == ')' || c == ',' || c == '{' || c == '}');
-}
-
-ListToken **head;
-
-void get_next_token(char *word, int line){
-
+Token* read_number(){
+    Token *t = (Token*) malloc(sizeof(Token));
+    t->type = NUMBER;
+    t->line = get_line();
     int i = 0;
-    int t = 0;
-
-    while(word[i] != '\0'){
-        int i_lexema = 0;
-        Token *token = malloc(sizeof(Token));
-        memset(token, 0, sizeof(token));
-        while (isspace(word[i]) || word[i] == '\t' || word[i] == '\n')
-            i++;
-        
-        if (word[i] == EOF){
-            token->type = T_EOF;
-            strcpy(token->lexema, "EOF");
-            printf("Token: [ %s ] - Tipo: %d - line %d\n", token->lexema, token->type, line);
-            continue;
-        }
-
-        if (isalpha(word[i])){
-            while(isalnum(word[i])){
-                token->lexema[i_lexema++] = word[i++];
-            }
-            token->lexema[i_lexema] = '\0';
-            token->type = check_keyword(token->lexema); 
-            printf("Token: [ %s ] - Tipo: %d - line %d\n", token->lexema, token->type, line);
-            continue;
-        }
-        
-        
-        if(isdigit(word[i])){
-            while(isdigit(word[i])){
-                token->lexema[i_lexema++] = word[i++];
-            }
-            token->lexema[i_lexema] = '\0';
-            token->type = NUMBER;
-            printf("Token: [ %s ] - Tipo: %d - line %d\n", token->lexema, token->type, line);
-            continue;
-        }
-        if(is_operator(word[i])){
-            token->lexema[i_lexema++] = word[i++];
-            token->type = OPERADOR;
-            printf("Token: [ %s ] - Tipo: %d - line %d\n", token->lexema, token->type, line);
-            continue;
-        }
-
-        if(is_symbol(word[i])){
-            token->lexema[i_lexema++] = word[i++];
-            token->lexema[i_lexema] = '\0';
-            token->type = SYMBOL;
-            printf("Token: [ %s ] - Tipo: %d - line %d\n", token->lexema, token->type, line);
-            continue;
-        }
+    char c = peek_char();
+    while (isdigit(c)){
+        t->lexema[i++] = c;
+        advance();
+        c = peek_char();
     }
-    
+    if (c == '.'){
+        t->lexema[i++] = c;
+        advance();
+        c = peek_char();
+        if(!isdigit(c)){
+            t->type = T_ERROR;
+            return t;
+        }
+        t->type = REAL;
+    } else {
+        t->type = INT;
+    }
+    while (isdigit(c)){
+        t->lexema[i++] = c;
+        advance();
+        c = peek_char();
+    }
+    t->lexema[i] = '\0';
+    return t;
 }
 
-int main() {
-    char **words;
+Token* read_string(){
+    Token *t = (Token*) malloc(sizeof(Token));
+    t->type = STR;
+    t->line = get_line();
+    int i = 0;
+    char c = peek_char();
+    while (c != '"' && c != EOF){
+        t->lexema[i++] = c;
+        advance();
+        c = peek_char();
+    }
+    if (c == EOF){
+        t->type = T_ERROR;
+        return t;
+    }
+    t->lexema[i] = '\0';
+    return t;
+}
 
-    Token token;
-    int i = 0; 
-    
-    printf("INICIO %p\n", &head);
-    char *text = "inteiro i;\nler(i);\nse i>10\nentao\nmostrar(i)\nsenao\nmostrar(10);\nmostrar (-1);\n";
-    char **line = split(text, '\n');
+char *read_word(){
+    char *word = (char*) malloc(sizeof(char) * 255);
+    int i = 0;
+    char c = peek_char();
+    while (isalnum(c)){
+        word[i++] = c;
+        advance();
+        c = peek_char();
+    }
+    word[i] = '\0';
+    return word;
+}
 
-    while(line[i]){
-        words = split(line[i], ' ');  
-        int j = 0;
-        while (words[j]){
-            get_next_token(words[j], i);
-            j++;
+char* get_all_symbol(){
+    char *word = (char*) malloc(sizeof(char) * 255);
+    int i = 0;
+    char c = peek_char();
+    while (c != ' ' && c != '\t' && c != '\n' && c != '\r' && c != EOF){
+        word[i++] = c;
+        advance();
+        c = peek_char();
+    }
+    word[i] = '\0';
+    return word;
+}
+
+int find_delimiters(char c){
+    char delimiters[] = {'+', '-', '*', '/', '(', ')', '{', '}', ';', ','};
+    for (int i = 0; i < 10; i++){
+        if (c == delimiters[i]){
+            return 1;
         }
-        i++;
     }
     return 0;
+}
+
+Token* get_next_token(){
+    if (peek_char() == 1 && get_line() == 1){
+        advance();
+    }
+    skip_space();
+    char c = peek_char();
+
+    if (c == EOF){
+        Token *t = (Token*) malloc(sizeof(Token));
+        t->type = T_EOF;
+        t->line = get_line();
+        strcpy(t->lexema, "EOF");
+        return t;
+    }
+
+
+    if (isdigit(c)){
+        return read_number();
+    }   
+
+    if (isalpha(c)){
+        Token *t = (Token*) malloc(sizeof(Token));
+        t->line = get_line();
+        char *word = read_word();
+        if (strcmp(word, "inteiro") == 0){
+            t->type = INT;
+        } else if (strcmp(word, "real") == 0){
+            t->type = REAL;
+        } else if (strcmp(word, "ler") == 0){
+            t->type = READ;
+        } else if (strcmp(word, "mostrar") == 0){
+            t->type = SHOW;
+        } else if (strcmp(word, "se") == 0){
+            t->type = IF;
+        } else if (strcmp(word, "entao") == 0){
+            t->type = THEN;
+        } else if (strcmp(word, "senao") == 0){
+            t->type = ELSE;
+        } else if (strcmp(word, "enquanto") == 0){
+            t->type = WHILE;
+        } else if (strcmp(word, "repita") == 0){
+            t->type = REPEAT;
+        } else if (strcmp(word, "ate") == 0){
+            t->type = UNTIL;
+        } else {
+            t->type = IDENTIFIER;
+        }
+        strcpy(t->lexema, word);
+        if (word != NULL){
+            free(word);
+        }
+        return t;
+    }
+
+    if (c == '"'){
+        return read_string();
+    }
+
+    if (find_delimiters(c)){
+        Token *t = (Token*) malloc(sizeof(Token));
+        t->line = get_line();
+        if (c == '+'){
+            t->type = PLUS;
+            strcpy(t->lexema, "+");
+        } else if (c == '-'){
+            t->type = MINUS;
+            strcpy(t->lexema, "-");
+        } else if (c == '*'){
+            t->type = MULT;
+            strcpy(t->lexema, "*");
+        } else if (c == '/'){
+            t->type = DIV;
+            strcpy(t->lexema, "/");
+        } else if (c == '('){
+            t->type = PAREN_L;
+            strcpy(t->lexema, "(");
+        } else if (c == ')'){
+            t->type = PAREN_R;
+            strcpy(t->lexema, ")");
+        } else if (c == '{'){
+            t->type = SYMBOL;
+            strcpy(t->lexema, "{");
+        } else if (c == '}'){
+            t->type = SYMBOL;
+            strcpy(t->lexema, "}");
+        } else if (c == ';'){
+            t->type = SEPARATOR_CMD;
+            strcpy(t->lexema, ";");
+        } else if (c == ','){
+            t->type = SEPARATOR_ID;
+            strcpy(t->lexema, ",");
+        }
+        advance();
+        return t;
+    }
+
+    char *word = get_all_symbol();
+    Token *t = (Token*) malloc(sizeof(Token));
+    t->line = get_line();
+    if (strcmp(word, "&&") == 0){
+        t->type = AND;
+        strcpy(t->lexema, word);
+    } else if (strcmp(word, "||") == 0){
+        t->type = OR;
+        strcpy(t->lexema, word);
+    } else if (strcmp(word, "<") == 0){
+        t->type = LESS;
+        strcpy(t->lexema, word);
+    } else if (strcmp(word, ">") == 0){
+        t->type = GREATER;
+        strcpy(t->lexema, word);
+    } else if (strcmp(word, "<=") == 0){
+        t->type = LESS_EQUAL;
+        strcpy(t->lexema, word);
+    } else if (strcmp(word, ">=") == 0){
+        t->type = GREATER_EQUAL;
+        strcpy(t->lexema, word);
+    } else if (strcmp(word, "==") == 0){
+        t->type = EQUAL;
+        strcpy(t->lexema, word);
+    } else if (strcmp(word, "!=") == 0){
+        t->type = NOT_EQUAL;
+        strcpy(t->lexema, word);
+    } else if (strcmp(word, "=") == 0){
+        t->type = ASSIGN;
+        strcpy(t->lexema, word);
+    } else {
+        t->type = T_ERROR;
+        strcpy(t->lexema, "ERROR");
+    }
+
+    if(word != NULL){
+        free(word);
+    }
+
+    return t;
 }

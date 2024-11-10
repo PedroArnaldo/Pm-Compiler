@@ -23,4 +23,3 @@ repita {
   } ate j>13;
 } ate i == 3;
 mostrar(-3);
-

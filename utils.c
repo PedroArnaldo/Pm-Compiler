@@ -4,6 +4,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+int line = 1;
+FILE *file;
+char caracter;
 
 char	*substr(char const *s, unsigned int start, size_t len)
 {
@@ -100,4 +103,30 @@ char	**split(char const *s, char c)
 	if (ptr == NULL)
 		return (NULL);
 	return (ft_split_word(s, c, n_words, ptr));
+}
+
+void unget_char(char c)
+{
+	ungetc(c, file);
+}
+
+void set_file(FILE *f)
+{
+	file = f;
+}
+
+char read_char()
+{
+	char c;
+
+	c = fgetc(file);
+	if (c == '\n')
+		line++;
+
+	return c;
+}
+
+int get_line()
+{
+	return line;
 }

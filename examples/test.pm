@@ -2,7 +2,7 @@ inteiro i;
 
 ler(i);
 
-se i>10
+se i > 10
   entao
     mostrar(i)
   senao
