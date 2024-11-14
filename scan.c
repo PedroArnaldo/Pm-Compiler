@@ -15,12 +15,28 @@ void advance(){
     ctr = read_char();
 }
 
+void retreat(){
+    unget_char(ctr);
+}
+
 void skip_space(){
     char c = peek_char();
     while (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
         advance();
         c = peek_char();
     }
+}
+
+int isSpecialCharacter(char c) {
+    char specialChars[] = {'=', '|', '>', '<', '&', '!'};
+    int i;
+
+    for (i = 0; i < 6; i++) {
+        if (c == specialChars[i]) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 Token* read_number(){
@@ -55,25 +71,6 @@ Token* read_number(){
     return t;
 }
 
-Token* read_string(){
-    Token *t = (Token*) malloc(sizeof(Token));
-    t->type = STR;
-    t->line = get_line();
-    int i = 0;
-    char c = peek_char();
-    while (c != '"' && c != EOF){
-        t->lexema[i++] = c;
-        advance();
-        c = peek_char();
-    }
-    if (c == EOF){
-        t->type = T_ERROR;
-        return t;
-    }
-    t->lexema[i] = '\0';
-    return t;
-}
-
 char *read_word(){
     char *word = (char*) malloc(sizeof(char) * 255);
     int i = 0;
@@ -91,7 +88,7 @@ char* get_all_symbol(){
     char *word = (char*) malloc(sizeof(char) * 255);
     int i = 0;
     char c = peek_char();
-    while (c != ' ' && c != '\t' && c != '\n' && c != '\r' && c != EOF){
+    while (isSpecialCharacter(c)){
         word[i++] = c;
         advance();
         c = peek_char();
@@ -164,9 +161,6 @@ Token* get_next_token(){
         return t;
     }
 
-    if (c == '"'){
-        return read_string();
-    }
 
     if (find_delimiters(c)){
         Token *t = (Token*) malloc(sizeof(Token));
@@ -190,10 +184,10 @@ Token* get_next_token(){
             t->type = PAREN_R;
             strcpy(t->lexema, ")");
         } else if (c == '{'){
-            t->type = SYMBOL;
+            t->type = KEY_OPEN;
             strcpy(t->lexema, "{");
         } else if (c == '}'){
-            t->type = SYMBOL;
+            t->type = KEY_CLOSE;
             strcpy(t->lexema, "}");
         } else if (c == ';'){
             t->type = SEPARATOR_CMD;
