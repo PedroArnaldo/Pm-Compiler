@@ -1,7 +1,7 @@
 #ifndef SCAN_H
 #define SCAN_H
 
-#include <stdio.h>
+#include "utils.h"
 
 typedef enum {   
     IDENTIFIER,     //variavel 0
@@ -19,8 +19,8 @@ typedef enum {
     EQUAL,          // == 12
     NOT_EQUAL,      // != 13
     ASSIGN,         // =  14
-    SYMBOL,         //{ } 15
-    STR,            //"word" 16
+    KEY_OPEN,       // {  15      
+    KEY_CLOSE,      // } 16
     PAREN_R,        // (  17
     PAREN_L,        // )  18
     IF,             // if  19 
@@ -35,14 +35,14 @@ typedef enum {
     SHOW,           // mostrar  28
     SEPARATOR_CMD,      // ;  29
     SEPARATOR_ID,      // ,   30
-    T_EOF,        // 31 
+    T_EOF,        // 31
     T_ERROR         // 32
 } TokenType;
 
 typedef struct{
     TokenType type;
     char lexema[255];
-    int line;
+    int t_line;
 } Token;
 
 Token* get_next_token();

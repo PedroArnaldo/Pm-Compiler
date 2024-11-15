@@ -1,6 +1,5 @@
 #include "utils.h"
-#include "scan.h"
-#include <stdio.h>
+
 
 int main(int argc, char** argv)
 {
@@ -22,12 +21,15 @@ int main(int argc, char** argv)
     Token* t = get_next_token();
     while (t->type != T_EOF)
     {
-        printf("Token: %d-  Lexema: %s - Line: %d\n", t->type, t->lexema, t->line);
+        printf("Token: %d -  Lexema: %s - Line: %d\n", t->type, t->lexema, t->t_line);
         t = get_next_token();
         if (t->type == T_ERROR)
-        {
-           printf("Error: Invalid token line: %d \n", t->line);
-            break;
-        }
+           error_lexico(t->t_line);
     }
+
+    //passos 
+        // inicar a leitura do arquivo
+        //fazer a analise lexica
+        //fazer a analise sintaica
+        //fazer a analise semantica
 }

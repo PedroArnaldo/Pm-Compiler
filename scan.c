@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
-#include "utils.h"
 #include "scan.h"
 
 char ctr = 1;
@@ -42,7 +37,7 @@ int isSpecialCharacter(char c) {
 Token* read_number(){
     Token *t = (Token*) malloc(sizeof(Token));
     t->type = NUMBER;
-    t->line = get_line();
+    t->t_line = get_line();
     int i = 0;
     char c = peek_char();
     while (isdigit(c)){
@@ -117,7 +112,7 @@ Token* get_next_token(){
     if (c == EOF){
         Token *t = (Token*) malloc(sizeof(Token));
         t->type = T_EOF;
-        t->line = get_line();
+        t->t_line = get_line();
         strcpy(t->lexema, "EOF");
         return t;
     }
@@ -129,7 +124,7 @@ Token* get_next_token(){
 
     if (isalpha(c)){
         Token *t = (Token*) malloc(sizeof(Token));
-        t->line = get_line();
+        t->t_line = get_line();
         char *word = read_word();
         if (strcmp(word, "inteiro") == 0){
             t->type = INT;
@@ -164,7 +159,7 @@ Token* get_next_token(){
 
     if (find_delimiters(c)){
         Token *t = (Token*) malloc(sizeof(Token));
-        t->line = get_line();
+        t->t_line = get_line();
         if (c == '+'){
             t->type = PLUS;
             strcpy(t->lexema, "+");
@@ -202,7 +197,7 @@ Token* get_next_token(){
 
     char *word = get_all_symbol();
     Token *t = (Token*) malloc(sizeof(Token));
-    t->line = get_line();
+    t->t_line = get_line();
     if (strcmp(word, "&&") == 0){
         t->type = AND;
         strcpy(t->lexema, word);
