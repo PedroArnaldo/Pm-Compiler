@@ -94,9 +94,12 @@ SyntaxTreeNode *comando() {
             add_child(node, comando_while());
             break;
         case REPEAT:
+        case UNTIL:
+            printf("REPEAT Estou aqui type %d lexema %s\n", get_current_token()->type, get_current_token()->lexema);
             add_child(node, comando_repeat());
             break;
         default:
+            printf("Default Estou aqui type %d lexema %s line -> %d\n", get_current_token()->type, get_current_token()->lexema, get_current_token()->t_line);
             syntax_error("Comando desconhecido");
     }
     return node;
@@ -157,7 +160,6 @@ SyntaxTreeNode *comando_escrita() {
 }
 
 SyntaxTreeNode *comando_atribuicao() {
-    printf("ATRIBUICAAO Estou aqui type %d lexema %s\n", get_current_token()->type, get_current_token()->lexema);
     SyntaxTreeNode *node = create_node(5, "atribuicao");
     if (get_current_token()->type == IDENTIFIER) {
         add_child(node, create_node(get_current_token()->type, get_current_token()->lexema));
@@ -165,11 +167,6 @@ SyntaxTreeNode *comando_atribuicao() {
         if (get_current_token()->type == ASSIGN) {
             advance_token(); // Consome '='
             add_child(node, expressao());
-            if (get_current_token()->type == SEPARATOR_CMD) {
-                advance_token(); // Consome ';'
-            } else {
-                syntax_error("';' esperado após expressão de atribuição");
-            }
         } else {
             syntax_error("'=' esperado após identificador");
         }
@@ -199,9 +196,9 @@ SyntaxTreeNode *comando_se() {
 
 SyntaxTreeNode *expressao() {
     SyntaxTreeNode *node = create_node(7, "expressao");
-    printf("Estou aqui type %d lexema %s\n", get_current_token()->type, get_current_token()->lexema);
+    printf("Estou EXPRESSAO aqui type %d lexema %s\n", get_current_token()->type, get_current_token()->lexema);
     add_child(node, termo());
-    while (get_current_token()->type == PLUS || get_current_token()->type == MINUS) {
+    while (get_current_token()->type == PLUS || get_current_token()->type == MINUS || get_current_token()->type == OR || get_current_token()->type == AND || get_current_token()->type == NOT_EQUAL || get_current_token()->type == EQUAL || get_current_token()->type == LESS || get_current_token()->type == GREATER || get_current_token()->type == LESS_EQUAL || get_current_token()->type == GREATER_EQUAL) {
         add_child(node, create_node(get_current_token()->type, get_current_token()->lexema));
         advance_token(); // Consome operador
         add_child(node, termo());
@@ -222,10 +219,15 @@ SyntaxTreeNode *termo() {
 
 SyntaxTreeNode *fator() {
     SyntaxTreeNode *node = create_node(9, "fator");
+    printf("Fator %d %s\n", get_current_token()->type, get_current_token()->lexema);
+
     if (get_current_token()->type == IDENTIFIER || get_current_token()->type == INT || get_current_token()->type == REAL) {
+        //aqui eu posso criar o numero antes de adicionar ao nó e depois adicionar a tabela de simbolos
         add_child(node, create_node(get_current_token()->type, get_current_token()->lexema));
         advance_token(); // Consome identificador ou número
+        printf("Fator consumindo identificador ou número %d %s -> line %d\n", get_current_token()->type, get_current_token()->lexema, get_current_token()->t_line);
     } else if (get_current_token()->type == PAREN_R) {
+        printf("Fator %d %s\n", get_current_token()->type, get_current_token()->lexema);
         advance_token(); // Consome '('
         add_child(node, expressao());
         if (get_current_token()->type == PAREN_L) {
@@ -233,9 +235,15 @@ SyntaxTreeNode *fator() {
         } else {
             syntax_error("')' esperado após expressão");
         }
-    } else {
+    }else {
         syntax_error("Identificador, número ou '(' esperado no fator");
     }
+
+    if (get_current_token()->type == SEPARATOR_CMD) {
+       // printf("SEPARADOR %d %s\n", get_current_token()->type, get_current_token()->lexema);
+       advance_token(); // Consome ';'
+    }
+
     return node;
 }
 
@@ -247,14 +255,36 @@ SyntaxTreeNode *comando_while() {
     return node;
 }
 
+/// implemente um forma de escapara do { } para o comando repeat 
+
 SyntaxTreeNode *comando_repeat() {
     SyntaxTreeNode *node = create_node(11, "repita");
     advance_token(); // Consome 'repita'
-    add_child(node, comando());
+    if (get_current_token()->type == KEY_OPEN || get_current_token()->type == KEY_CLOSE){
+        printf("Estou {} aqui type %d lexema %s\n", get_current_token()->type, get_current_token()->lexema);
+        advance_token();
+    }
+    while (get_current_token()->type != UNTIL){
+        if (get_current_token()->type == T_EOF)
+            syntax_error("'até' esperado após o comando de repetição");
+        if (get_current_token()->type == KEY_OPEN || get_current_token()->type == KEY_CLOSE){
+            advance_token();//consume { }
+            break;
+        }
+        printf("Estou REPEAT aqui type antes de entrar no comando %d lexema %s\n", get_current_token()->type, get_current_token()->lexema);
+        add_child(node, comando());
+    }
+     if (get_current_token()->type == KEY_OPEN || get_current_token()->type == KEY_CLOSE)
+        advance_token(); // Consome {
+    printf("Token util %d  - %s\n", get_current_token()->t_line, get_current_token()->lexema);
     if (get_current_token()->type == UNTIL) {
         advance_token(); // Consome 'até'
+        printf("UNTIL token %d %s \n", get_current_token()->t_line, get_current_token()->lexema);
         add_child(node, expressao());
-    } else {
+    } else if(get_current_token()->type == SEPARATOR_CMD){
+        printf("SEPARADo token %d %s \n", get_current_token()->t_line, get_current_token()->lexema);
+    } 
+    else {
         syntax_error("'até' esperado após comando de repetição");
     }
     return node;

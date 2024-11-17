@@ -1,4 +1,5 @@
 inteiro i;
+inteiro j;
 
 ler(i);
 
@@ -6,13 +7,21 @@ se i>19
   entao
     se i<30
 	  entao
-	    mostrar (25);
+	    mostrar (i);
 	  senao
-	    mostrar(35);
+	    mostrar(i);
   senao
     se i<10
 	  entao
-	    mostrar(5);
+	    mostrar(i);
 	  senao
-	    mostrar(15);
-mostrar (-1);
+	    mostrar(i);
+mostrar (i);
+
+repita {
+  i = i + 1;
+  j = 11;
+} ate i == 3;
+
+mostrar(i);
+mostrar(j);
