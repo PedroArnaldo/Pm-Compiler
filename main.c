@@ -18,15 +18,20 @@ int main(int argc, char** argv)
 
     set_file(file);
     
-    Token* t = get_next_token();
-    while (t->type != T_EOF)
-    {
-        printf("Token: %d -  Lexema: %s - Line: %d\n", t->type, t->lexema, t->t_line);
-        t = get_next_token();
-        if (t->type == T_ERROR)
-           error_lexico(t->t_line);
-    }
+    // Token* t = get_next_token();
+    // while (t->type != T_EOF)
+    // {
+    //     printf("Token: %d -  Lexema: %s - Line: %d\n", t->type, t->lexema, t->t_line);
+    //     t = get_next_token();
+    //     if (t->type == T_ERROR)
+    //        error_lexico(t->t_line);
+    // }
 
+    SyntaxTreeNode* root = parse();
+    //make print tree
+ //   print_tree(root, 20);
+   // free_tree(root);
+    (void) root;
     //passos 
         // inicar a leitura do arquivo
         //fazer a analise lexica

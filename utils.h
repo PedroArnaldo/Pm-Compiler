@@ -5,7 +5,10 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include "syntax_tree_node.h"
 #include "scan.h"
+#include "parse.h"
+#include "syntax_tree.h"
 
 char read_char();
 int get_line();

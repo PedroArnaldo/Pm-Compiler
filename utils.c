@@ -37,6 +37,6 @@ void error_lexico(int line_in){
 
 void syntax_error(char *msg)
 {
-	printf("Erro syntax: %s \n", msg);
+	printf("Erro de sintaxe na linha %d: %s\n", line, msg);
 	exit(EXIT_FAILURE);
 }

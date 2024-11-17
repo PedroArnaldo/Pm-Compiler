@@ -21,8 +21,8 @@ typedef enum {
     ASSIGN,         // =  14
     KEY_OPEN,       // {  15      
     KEY_CLOSE,      // } 16
-    PAREN_R,        // (  17
-    PAREN_L,        // )  18
+    PAREN_R,        // )  17
+    PAREN_L,        // (  18
     IF,             // if  19 
     THEN,           // entao  20
     ELSE,           // else  21
