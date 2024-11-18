@@ -22,7 +22,12 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+run: 
+	$(TARGET) ./examples/se.pm
+
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
+
+rebuild: clean all
 
 .PHONY: all clean

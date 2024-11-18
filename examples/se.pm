@@ -1,27 +1,28 @@
-inteiro i;
+inteiro iva;
 inteiro j;
 
 ler(i);
 
-se i>19
+iva = 10;
+
+se iva>19
   entao
-    se i<30
+    se iva<30
 	  entao
-	    mostrar (i);
+	    mostrar (iva);
 	  senao
-	    mostrar(i);
+	    mostrar(iva);
   senao
-    se i<10
+    se iva<10
 	  entao
-	    mostrar(i);
+	    mostrar(iva);
 	  senao
-	    mostrar(i);
-mostrar (i);
+	    mostrar(iva);
+mostrar (iva);
 
 repita {
-  i = i + 1;
+  iva = iva + 1;
   j = 11;
-} ate i == 3;
+} ate iva == 3;
 
-mostrar(i);
-mostrar(j);
+mostrar(iva);

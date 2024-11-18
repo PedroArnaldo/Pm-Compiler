@@ -7,13 +7,10 @@
 typedef struct {
     char name[255];
     int type;
-    int scope;
 } Symbol;
 
-// Função principal para iniciar o parsing
 SyntaxTreeNode *parse();
 
-// Funções auxiliares para cada não-terminal
 SyntaxTreeNode *programa();
 SyntaxTreeNode *declaracao();
 SyntaxTreeNode *comando();
